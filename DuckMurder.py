@@ -5,6 +5,7 @@ from pygame.locals import *
 import random
 import pathlib
 import sys
+import math
 pygame.init()
 
 usefull = False
@@ -21,7 +22,54 @@ path = str(pathlib.Path(__file__).parent.resolve())
 print(path,file=open("log.txt","w"))
 gun = pygame.mixer.Sound(path+"/assets/duck_gun.ogg")
 gun.set_volume(.5)
+pygame.mixer.music.load(path+"/assets/war-full.wav")
+pygame.mixer.music.play(loops=-1)
 
+class particle():
+    def move(self):
+        self.y+=self.yv
+        self.x+=self.xv
+        self.yv+=.25
+        self.xv=self.xv*.99
+        if(self.y>dh):
+            if(len(self.trail)>0):
+                self.trail.pop(0)
+            else:
+                particles.remove(self)
+        else:
+            self.trail.append((self.x,self.y))
+
+    def draw(self,surface):
+        last = self.getPos()
+        for x in self.trail:
+            pygame.draw.line(surface,"red",x,last,width=10)
+            last = x
+        surface.blit( self.getSurface(),self.getBox())
+
+    def getPos(self):
+        return (self.x+8,self.y+8)
+
+    def getTexture(self):
+        return path+"/assets/blood.png"
+
+    def getBox(self):
+        #print((self.x,self.y,32,32))
+        return (self.x,self.y,16,16)
+
+    def getSurface(self):
+        self.texbackup = self.getTexture()
+        rect = (0,0,16,16)
+        sprite = pygame.image.load( self.texbackup ).subsurface(rect)
+        self.surf = sprite
+        return self.surf
+
+
+    def __init__(self,angle,pos):
+        self.x = pos[0]+32
+        self.xv = math.sin(math.radians(angle*8))*10
+        self.y = pos[1]+32
+        self.yv = math.cos(math.radians(angle*8))*10
+        self.trail=[]
 
 class bird():
     def die(self):
@@ -104,6 +152,7 @@ class bird():
         self.bear = bear
 
 birds = [bird(0,0,True),bird(128,0,True)]
+particles = []
 mouse = None
 spawns = [(208,448),(490,308),(1070,248),(1150,248),(460,308)]
 
@@ -132,6 +181,8 @@ def renderframe(events,display,skipevents=False,screen=None):
                     if(bpos[0]<pos[0] and bpos[1]<pos[1]):
                         if(bpos[0]+64>pos[0] and bpos[1]+64>pos[1]):
                             x.die()
+                            for p in range(45):
+                                particles.append(particle(p,bpos))
                             break
 
             if event.type == pygame.MOUSEMOTION:
@@ -152,9 +203,14 @@ def renderframe(events,display,skipevents=False,screen=None):
             if  event.type == WINDOWLEAVE:
                 screen.prossesinputs("Mouseleave",event,display,globals())
 
+    clock.tick(120)
     #pygame.display.update()
     screen.redraw(display)
     surface = surfacewidget.mysurface
+    if(len(particles)>0):
+        blood = pygame.image.load(path+"/assets/blood_overlay.png")
+        pygame.transform.scale(blood,(dw,dh))
+        surface.blit(blood,(0,0,dw,dh))
     if(random.random()>.99):
         if(random.random()>.9):
             i = spawns[int(random.uniform(0,4))]
@@ -175,9 +231,12 @@ def renderframe(events,display,skipevents=False,screen=None):
             x.frame2=0
         else:
             x.frame2+=1
-        if(x.frame2%20==0):
+        if(x.frame2%10==0):
             x.advanceframe()
         surface.blit( x.getSurface(),x.getBox())
+    for x in particles:
+        x.move()
+        x.draw(surface)
     if(mouse!=None):
         image = pygame.image.load(path+"/assets/target.png")
         image = pygame.transform.scale(image,(32,32))
