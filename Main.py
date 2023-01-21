@@ -1,1 +1,1 @@
-import DuckMassacre.DuckMurder
+import DuckMurder
