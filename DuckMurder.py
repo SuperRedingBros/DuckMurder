@@ -29,7 +29,7 @@ class particle():
     def move(self):
         self.y+=self.yv
         self.x+=self.xv
-        self.yv+=.25
+        self.yv+=.45
         self.xv=self.xv*.99
         if(self.y>dh):
             if(len(self.trail)>0):
@@ -41,10 +41,14 @@ class particle():
 
     def draw(self,surface):
         last = self.getPos()
-        for x in self.trail:
-            pygame.draw.line(surface,"red",x,last,width=10)
+        pygame.draw.circle(surface,(150,0,0),last,radius=5)
+        trail = self.trail.copy()
+        trail.reverse()
+        for x in trail:
+            pygame.draw.line(surface,(150,0,0),x,last,width=10)
             last = x
-        surface.blit( self.getSurface(),self.getBox())
+            pygame.draw.circle(surface,(150,0,0),last,radius=5)
+        #surface.blit( self.getSurface(),self.getBox())
 
     def getPos(self):
         return (self.x+8,self.y+8)
@@ -66,9 +70,9 @@ class particle():
 
     def __init__(self,angle,pos):
         self.x = pos[0]+32
-        self.xv = math.sin(math.radians(angle*8))*10
+        self.xv = math.sin(math.radians(angle*18))*10
         self.y = pos[1]+32
-        self.yv = math.cos(math.radians(angle*8))*10
+        self.yv = math.cos(math.radians(angle*18))*10
         self.trail=[]
 
 class bird():
@@ -93,7 +97,7 @@ class bird():
         if(self.direction==None):
             return path+"/assets/furry.png"
         if(self.bear):
-            return path+"/assets/bear_duck.png"
+            return path+"/assets/polor_bear.png"
         return path+"/assets/duck_hunt.png"
 
     def getSurface(self):
@@ -101,20 +105,27 @@ class bird():
         if(self.direction==None):
             rect = (0,0,32,32)
         else:
-            if(not self.dead):
-                if(self.color==0):
-                    rect = (109+((self.frame)*36),8,36,36)
-                if(self.color==1):
-                    rect = (107+((self.frame)*36),48,36,36)
-                if(self.color==2):
-                    rect = (105+((self.frame)*36),91,36,36)
+            if(self.bear==False):
+                if(not self.dead):
+                    if(self.color==0):
+                        rect = (109+((self.frame)*36),8,36,36)
+                    if(self.color==1):
+                        rect = (107+((self.frame)*36),48,36,36)
+                    if(self.color==2):
+                        rect = (105+((self.frame)*36),91,36,36)
+                else:
+                    if(self.color==0):
+                        rect = (225,8,36,36)
+                    if(self.color==1):
+                        rect = (223,48,36,36)
+                    if(self.color==2):
+                        rect = (221,91,36,36)
             else:
-                if(self.color==0):
-                    rect = (225,8,36,36)
-                if(self.color==1):
-                    rect = (223,48,36,36)
-                if(self.color==2):
-                    rect = (221,91,36,36)
+                if(not self.dead):
+                    rect = (123+((self.frame)*30),297,30,33)
+                else:
+                    rect = (213,297,30,33)
+        #print(rect)
         sprite = pygame.image.load( self.texbackup ).subsurface(rect)
         sprite = pygame.transform.scale2x(sprite)
         self.surf = pygame.transform.flip(sprite ,not self.direction,False)
@@ -139,6 +150,8 @@ class bird():
         #print((self.x,self.y,32,32))
         if(self.direction==None):
             return (self.x,self.y,36,36)
+        if(self.bear==True):
+            return (self.x,self.y,33,33)
         return (self.x,self.y,36,36)
 
     def __init__(self,x,y,direction,bear=False):
@@ -181,7 +194,7 @@ def renderframe(events,display,skipevents=False,screen=None):
                     if(bpos[0]<pos[0] and bpos[1]<pos[1]):
                         if(bpos[0]+64>pos[0] and bpos[1]+64>pos[1]):
                             x.die()
-                            for p in range(45):
+                            for p in range(20):
                                 particles.append(particle(p,bpos))
                             break
 
@@ -206,11 +219,11 @@ def renderframe(events,display,skipevents=False,screen=None):
     clock.tick(120)
     #pygame.display.update()
     screen.redraw(display)
-    surface = surfacewidget.mysurface
     if(len(particles)>0):
         blood = pygame.image.load(path+"/assets/blood_overlay.png")
         pygame.transform.scale(blood,(dw,dh))
-        surface.blit(blood,(0,0,dw,dh))
+        gameDisplay.blit(blood,(0,0,dw,dh))
+    surface = surfacewidget.mysurface
     if(random.random()>.99):
         if(random.random()>.9):
             i = spawns[int(random.uniform(0,4))]
@@ -282,9 +295,9 @@ overlay = guis.overlayWidget("Overlay",screen)
 image = guis.imageWidget("Img",overlay,style={"W":"pygame.display.get_window_size()[0]","H":"pygame.display.get_window_size()[1]","Image":path+"/assets/background.png"})
 vlist = guis.vlistWidget("List",overlay)
 hlist = guis.hlistWidget("Hlist",vlist)
+surfacewidget = guis.surfaceWidget("Surface",overlay,style={"W":"pygame.display.get_window_size()[0]","H":"pygame.display.get_window_size()[1]"})
 guis.emptyWidget("Empty",hlist,style={"W":"pygame.display.get_window_size()[0]-160","H":32})
 guis.textWidget("Text",hlist,style={"W":76,"H":32,"Text":"Score:"})
 text = guis.textWidget("Text2",hlist,style={"W":32,"H":32})
 text.text = str(score)
-surfacewidget = guis.surfaceWidget("Surface",overlay,style={"W":"pygame.display.get_window_size()[0]","H":"pygame.display.get_window_size()[1]"})
 render()
