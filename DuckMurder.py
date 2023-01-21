@@ -1,10 +1,14 @@
+
+import sys
+if __name__ == '__main__':
+    sys.path.append("D:\Python\RKit\GUIs")
+
 import guis
 #from guis.guis import *
 import pygame
 from pygame.locals import *
 import random
 import pathlib
-import sys
 import math
 pygame.init()
 
@@ -175,9 +179,6 @@ introTime = 0
 skipIntro = False
 killCounter = 0
 
-for x in range(20):
-    print("Helllooooo")
-
 def renderframe(events,display,skipevents=False,screen=None):
     #print("frame")
     global dw
@@ -186,6 +187,7 @@ def renderframe(events,display,skipevents=False,screen=None):
     global doneMusic
     global doneIntro
     global introTime
+    global killCounter
     guis.globallink = globals()
     if not skipevents:
         for event in events:
@@ -198,6 +200,8 @@ def renderframe(events,display,skipevents=False,screen=None):
                 screen.prossesinputs("Keyup",event,display,globals())
             if event.type == pygame.MOUSEBUTTONDOWN:
                 screen.prossesinputs("Mousedown",event,display,globals())
+                if(not doneIntro):
+                    break
                 gun.play()
                 for x in birds:
                     pos = event.pos
@@ -206,7 +210,7 @@ def renderframe(events,display,skipevents=False,screen=None):
                     if(bpos[0]<pos[0] and bpos[1]<pos[1]):
                         if(bpos[0]+64>pos[0] and bpos[1]+64>pos[1]):
                             x.die()
-                            if(not x.dead()):
+                            if(not x.dead):
                                 if x.direction!=None:
                                     killCounter+=1
                                     if(killCounter>20):
