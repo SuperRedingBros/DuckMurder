@@ -173,6 +173,10 @@ doneMusic = False
 doneIntro = False
 introTime = 0
 skipIntro = False
+killCounter = 0
+
+for x in range(20):
+    print("Helllooooo")
 
 def renderframe(events,display,skipevents=False,screen=None):
     #print("frame")
@@ -202,8 +206,15 @@ def renderframe(events,display,skipevents=False,screen=None):
                     if(bpos[0]<pos[0] and bpos[1]<pos[1]):
                         if(bpos[0]+64>pos[0] and bpos[1]+64>pos[1]):
                             x.die()
-                            for p in range(20):
-                                particles.append(particle(p,bpos))
+                            if(not x.dead()):
+                                if x.direction!=None:
+                                    killCounter+=1
+                                    if(killCounter>20):
+                                        killCounter=0
+                                        i = spawns[int(random.uniform(0,4))]
+                                        birds.append(bird(i[0],i[1], None))
+                                for p in range(20):
+                                    particles.append(particle(p,bpos))
                             break
 
             if event.type == pygame.MOUSEMOTION:
@@ -221,7 +232,7 @@ def renderframe(events,display,skipevents=False,screen=None):
                 guis.dh = s[1]
                 display.fill((0,0,0))
                 pygame.display.update()
-            if  event.type == WINDOWLEAVE:
+            if event.type == WINDOWLEAVE:
                 screen.prossesinputs("Mouseleave",event,display,globals())
 
     clock.tick(120)
@@ -237,9 +248,6 @@ def renderframe(events,display,skipevents=False,screen=None):
         gameDisplay.blit(blood,(0,0,dw,dh))
     surface = surfacewidget.mysurface
     if(random.random()>.99):
-        if(random.random()>.9):
-            i = spawns[int(random.uniform(0,4))]
-            birds.append(bird(i[0],i[1], None  ))
         if(random.random()>.5):
             if(random.random()>.5):
                 birds.append(bird(0,random.uniform(0,dh/2), True  ))
