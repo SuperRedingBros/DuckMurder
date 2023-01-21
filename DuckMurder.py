@@ -23,7 +23,8 @@ print(path,file=open("log.txt","w"))
 gun = pygame.mixer.Sound(path+"/assets/duck_gun.ogg")
 gun.set_volume(.5)
 pygame.mixer.music.load(path+"/assets/war-full.wav")
-pygame.mixer.music.play(loops=-1)
+video = guis.videoplayer.Video(path+"/assets/TitleScreen.mp4")
+video.set_size((dw,dh))
 
 class particle():
     def move(self):
@@ -168,12 +169,19 @@ birds = [bird(0,0,True),bird(128,0,True)]
 particles = []
 mouse = None
 spawns = [(208,448),(490,308),(1070,248),(1150,248),(460,308)]
+doneMusic = False
+doneIntro = False
+introTime = 0
+skipIntro = False
 
 def renderframe(events,display,skipevents=False,screen=None):
     #print("frame")
     global dw
     global dh
     global mouse
+    global doneMusic
+    global doneIntro
+    global introTime
     guis.globallink = globals()
     if not skipevents:
         for event in events:
@@ -219,6 +227,10 @@ def renderframe(events,display,skipevents=False,screen=None):
     clock.tick(120)
     #pygame.display.update()
     screen.redraw(display)
+    if((doneIntro or skipIntro)and not doneMusic ):
+        #print("s")
+        pygame.mixer.music.play(loops=-1)
+        doneMusic = True
     if(len(particles)>0):
         blood = pygame.image.load(path+"/assets/blood_overlay.png")
         pygame.transform.scale(blood,(dw,dh))
@@ -254,6 +266,14 @@ def renderframe(events,display,skipevents=False,screen=None):
         image = pygame.image.load(path+"/assets/target.png")
         image = pygame.transform.scale(image,(32,32))
         surface.blit(image ,(mouse[0]-16,mouse[1]-16,32,32))
+    #print(introTime)
+    if(introTime<=450 and not skipIntro):
+        video.draw(display,(0,0))
+        introTime+=1
+    else:
+        #print("s")
+        doneIntro=True
+        video.close()
 
 def render():
     global looping
