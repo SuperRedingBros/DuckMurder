@@ -209,7 +209,6 @@ def renderframe(events,display,skipevents=False,screen=None):
                     bpos = x.getPos()
                     if(bpos[0]<pos[0] and bpos[1]<pos[1]):
                         if(bpos[0]+64>pos[0] and bpos[1]+64>pos[1]):
-                            x.die()
                             if(not x.dead):
                                 if x.direction!=None:
                                     killCounter+=1
@@ -219,6 +218,7 @@ def renderframe(events,display,skipevents=False,screen=None):
                                         birds.append(bird(i[0],i[1], None))
                                 for p in range(20):
                                     particles.append(particle(p,bpos))
+                            x.die()
                             break
 
             if event.type == pygame.MOUSEMOTION:
