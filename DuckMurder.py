@@ -21,7 +21,7 @@ ldh = 640
 variabletest = 0
 looping=True
 clock = pygame.time.Clock()
-score = 0
+score = 100000
 path = str(pathlib.Path(__file__).parent.resolve())
 print(path,file=open("log.txt","w"))
 gun = pygame.mixer.Sound(path+"/assets/duck_gun.ogg")
@@ -34,9 +34,9 @@ class particle():
     def move(self):
         self.y+=self.yv
         self.x+=self.xv
-        self.yv+=.45
-        self.xv=self.xv*.99
-        if(self.y>dh):
+        self.yv+=random.uniform(.41,.49)
+        self.xv=self.xv*random.uniform(.97,.99)
+        if(self.y>dh or len(self.trail)>=30):
             if(len(self.trail)>0):
                 self.trail.pop(0)
             else:
@@ -45,25 +45,36 @@ class particle():
             self.trail.append((self.x,self.y))
 
     def draw(self,surface):
-        last = self.getPos()
-        pygame.draw.circle(surface,(150,0,0),last,radius=5)
+        last = (self.x,self.y)
+        pygame.draw.circle(surface,(150,0,0,155),self.modPos(last),radius=5)
         trail = self.trail.copy()
         trail.reverse()
         for x in trail:
-            pygame.draw.line(surface,(150,0,0),x,last,width=10)
+            pygame.draw.line(surface,(150,0,0),self.modPos(x),self.modPos(last),width=10)
             last = x
-            pygame.draw.circle(surface,(150,0,0),last,radius=5)
+            pygame.draw.circle(surface,(150,0,0),self.modPos(last),radius=5)
         #surface.blit( self.getSurface(),self.getBox())
 
+    def modPos(self,pos):
+        x = (pos[0]/1280)*dw
+        y = (pos[1]/640)*dh
+        return (x,y)
+
     def getPos(self):
-        return (self.x+8,self.y+8)
+        return (self.getX(),self.getY())
+
+    def getX(self):
+        return (self.x/1280)*dw
+
+    def getY(self):
+        return (self.y/640)*dh
 
     def getTexture(self):
         return path+"/assets/blood.png"
 
     def getBox(self):
         #print((self.x,self.y,32,32))
-        return (self.x,self.y,16,16)
+        return (self.getX(),self.getY(),16,16)
 
     def getSurface(self):
         self.texbackup = self.getTexture()
@@ -72,11 +83,10 @@ class particle():
         self.surf = sprite
         return self.surf
 
-
     def __init__(self,angle,pos):
-        self.x = pos[0]+32
+        self.x = pos[0]+32+math.sin(math.radians(angle*18))*15
         self.xv = math.sin(math.radians(angle*18))*10
-        self.y = pos[1]+32
+        self.y = pos[1]+32+math.cos(math.radians(angle*18))*15
         self.yv = math.cos(math.radians(angle*18))*10
         self.trail=[]
 
@@ -149,15 +159,21 @@ class bird():
                 self.die()
 
     def getPos(self):
-        return (self.x,self.y)
+        return (self.getX(),self.getY())
+
+    def getX(self):
+        return (self.x/1280)*dw
+
+    def getY(self):
+        return (self.y/640)*dh
 
     def getBox(self):
         #print((self.x,self.y,32,32))
         if(self.direction==None):
-            return (self.x,self.y,36,36)
+            return (self.getX(),self.getY(),36,36)
         if(self.bear==True):
-            return (self.x,self.y,33,33)
-        return (self.x,self.y,36,36)
+            return (self.getX(),self.getY(),33,33)
+        return (self.getX(),self.getY(),36,36)
 
     def __init__(self,x,y,direction,bear=False):
         self.x = x
@@ -176,8 +192,14 @@ spawns = [(208,448),(490,308),(1070,248),(1150,248),(460,308)]
 doneMusic = False
 doneIntro = False
 introTime = 0
-skipIntro = False
+skipIntro = True
 killCounter = 0
+
+def spawnFurry():
+    i = spawns[int(random.uniform(0,4))]
+    w = i[0]
+    h = i[1]
+    birds.append(bird(w,h, None))
 
 def renderframe(events,display,skipevents=False,screen=None):
     #print("frame")
@@ -206,21 +228,20 @@ def renderframe(events,display,skipevents=False,screen=None):
                 for x in birds:
                     pos = event.pos
                     #print(pos)
-                    bpos = x.getPos()
+                    bpos = (x.getPos())
+                    brealpos = (x.x,x.y)
                     if(bpos[0]<pos[0] and bpos[1]<pos[1]):
                         if(bpos[0]+64>pos[0] and bpos[1]+64>pos[1]):
                             if(not x.dead):
                                 if x.direction!=None:
                                     killCounter+=1
-                                    if(killCounter>20):
-                                        killCounter=0
-                                        i = spawns[int(random.uniform(0,4))]
-                                        birds.append(bird(i[0],i[1], None))
+                                    if(killCounter>1):
+                                        killCounter=int(random.uniform(0,5))
+                                        spawnFurry()
                                 for p in range(20):
-                                    particles.append(particle(p,bpos))
+                                    particles.append(particle(p,brealpos))
                             x.die()
                             break
-
             if event.type == pygame.MOUSEMOTION:
                 screen.prossesinputs("Mousemove",event,display,globals())
                 mouse = event.pos
@@ -234,6 +255,8 @@ def renderframe(events,display,skipevents=False,screen=None):
                 s = pygame.display.get_window_size()
                 guis.dw = s[0]
                 guis.dh = s[1]
+                dw = s[0]
+                dh = s[1]
                 display.fill((0,0,0))
                 pygame.display.update()
             if event.type == WINDOWLEAVE:
@@ -248,7 +271,7 @@ def renderframe(events,display,skipevents=False,screen=None):
         doneMusic = True
     if(len(particles)>0):
         blood = pygame.image.load(path+"/assets/blood_overlay.png")
-        pygame.transform.scale(blood,(dw,dh))
+        blood = pygame.transform.scale(blood,(dw,dh))
         gameDisplay.blit(blood,(0,0,dw,dh))
     surface = surfacewidget.mysurface
     if(random.random()>.99):
@@ -328,8 +351,8 @@ image = guis.imageWidget("Img",overlay,style={"W":"pygame.display.get_window_siz
 vlist = guis.vlistWidget("List",overlay)
 hlist = guis.hlistWidget("Hlist",vlist)
 surfacewidget = guis.surfaceWidget("Surface",overlay,style={"W":"pygame.display.get_window_size()[0]","H":"pygame.display.get_window_size()[1]"})
-guis.emptyWidget("Empty",hlist,style={"W":"pygame.display.get_window_size()[0]-160","H":32})
+guis.emptyWidget("Empty",hlist,style={"W":"pygame.display.get_window_size()[0]-240","H":32})
 guis.textWidget("Text",hlist,style={"W":76,"H":32,"Text":"Score:"})
-text = guis.textWidget("Text2",hlist,style={"W":32,"H":32})
+text = guis.textWidget("Text2",hlist,style={"W":128,"H":32})
 text.text = str(score)
 render()
