@@ -27,6 +27,7 @@ print(path,file=open("log.txt","w"))
 gun = pygame.mixer.Sound(path+"/assets/duck_gun.ogg")
 gun.set_volume(.5)
 pygame.mixer.music.load(path+"/assets/war-full.wav")
+pygame.mixer.music.set_volume(.5)
 video = guis.videoplayer.Video(path+"/assets/TitleScreen.mp4")
 video.set_size((dw,dh))
 
