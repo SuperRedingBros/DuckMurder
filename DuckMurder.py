@@ -193,7 +193,7 @@ spawns = [(208,448),(490,308),(1070,248),(1150,248),(460,308)]
 doneMusic = False
 doneIntro = False
 introTime = 0
-skipIntro = True
+skipIntro = False
 killCounter = 0
 
 def spawnFurry():
@@ -236,7 +236,7 @@ def renderframe(events,display,skipevents=False,screen=None):
                             if(not x.dead):
                                 if x.direction!=None:
                                     killCounter+=1
-                                    if(killCounter>1):
+                                    if(killCounter>19):
                                         killCounter=int(random.uniform(0,5))
                                         spawnFurry()
                                 for p in range(20):
