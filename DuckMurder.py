@@ -216,39 +216,40 @@ class bird():
 
 birds = [bird(0, 0, True)]
 particles = []
-mouse = None
 spawns = [(208, 448), (490, 308), (1070, 248), (1150, 248), (460, 308)]
-doneMusic = False
-doneIntro = False
-introTime = 0
-skipIntro = True
-killCounter = 0
+
 frame = 0
-blood = pygame.image.load(path + "/assets/blood_overlay.png").convert_alpha()
-blood = pygame.transform.scale(blood, (dw, dh))
-targetimage = pygame.image.load(path + "/assets/target.png").convert_alpha()
-targetimage = pygame.transform.scale(targetimage, (32, 32))
 
 
 def spawnFurry():
-    i = spawns[int(random.uniform(0, 4))]
+    i = spawns[int(uniform(0, 4))]
     w = i[0]
     h = i[1]
     birds.append(bird(w, h, None))
+
+
+class DataStore:
+    def __init__(self):
+        self.doneMusic = False
+        self.doneIntro = False
+        self.introTime = 0
+        self.frame = 0
+        self.skipIntro = True
+        self.killCounter = 0
+        self.mouse = None
+        blood = pygame.image.load(path + "/assets/blood_overlay.png").convert_alpha()
+        self.blood = pygame.transform.scale(blood, (dw, dh))
+        targetimage = pygame.image.load(path + "/assets/target.png").convert_alpha()
+        self.targetimage = pygame.transform.scale(targetimage, (32, 32))
+
+
+data = DataStore()
 
 
 def renderframe(events, display, skipevents=False, screen=None):
     # print("frame")
     global dw
     global dh
-    global mouse
-    global doneMusic
-    global doneIntro
-    global introTime
-    global killCounter
-    global frame
-    global blood
-    global targetimage
     #guis.globallink = globals()
     if not skipevents:
         for event in events:
@@ -261,7 +262,7 @@ def renderframe(events, display, skipevents=False, screen=None):
                 screen.prossesinputs("Keyup", event, display, globals())
             if event.type == pygame.MOUSEBUTTONDOWN:
                 screen.prossesinputs("Mousedown", event, display, globals())
-                if (not doneIntro):
+                if (not data.doneIntro):
                     break
                 gun.play()
                 for x in birds:
@@ -273,9 +274,9 @@ def renderframe(events, display, skipevents=False, screen=None):
                         if (bpos[0] + 64 > pos[0] and bpos[1] + 64 > pos[1]):
                             if (not x.dead):
                                 if x.direction != None:
-                                    killCounter += 1
-                                    if (killCounter > 19):
-                                        killCounter = int(random.uniform(0, 5))
+                                    data.killCounter += 1
+                                    if (data.killCounter > 19):
+                                        data.killCounter = int(uniform(0, 5))
                                         spawnFurry()
                                 for p in range(10):
                                     particles.append(particle(p, brealpos))
@@ -283,7 +284,7 @@ def renderframe(events, display, skipevents=False, screen=None):
                             break
             if event.type == pygame.MOUSEMOTION:
                 screen.prossesinputs("Mousemove", event, display, globals())
-                mouse = event.pos
+                data.mouse = event.pos
             if event.type == pygame.MOUSEBUTTONUP:
                 screen.prossesinputs("Mouseup", event, display, globals())
             if event.type == pygame.VIDEORESIZE:
@@ -302,14 +303,14 @@ def renderframe(events, display, skipevents=False, screen=None):
     # pygame.display.update()
     print(clock.get_fps())
     screen.redraw(display)
-    if (doneIntro or skipIntro) and not doneMusic:
+    if (data.doneIntro or data.skipIntro) and not data.doneMusic:
         # print("s")
         pygame.mixer.music.play(loops=-1)
-        doneMusic = True
+        data.doneMusic = True
     if (len(particles) > 0):
-        gameDisplay.blit(blood, (0, 0, dw, dh), special_flags=pygame.BLEND_ALPHA_SDL2)
+        gameDisplay.blit(data.blood, (0, 0, dw, dh), special_flags=pygame.BLEND_ALPHA_SDL2)
     surface = surfacewidget.mysurface
-    if (random() > .985):
+    if random() > .985:
         if (random() > .5):
             if (random() > .5):
                 birds.append(bird(0, uniform(0, dh / 2), True))
@@ -320,25 +321,25 @@ def renderframe(events, display, skipevents=False, screen=None):
                 birds.append(bird(0, uniform(dh / 1.2, (dh / 1.2) - 32), True, True))
             else:
                 birds.append(bird(dw - 32, uniform(dh / 1.2, (dh / 1.2) - 32), False, True))
-    frame += 1
+    data.frame += 1
     for x in birds:
         x.moveX(x.speed)
-        if frame % 5 == 0:
+        if data.frame % 5 == 0:
             x.advanceframe()
         surface.blit(x.getSurface(), x.getBox())
     for x in particles:
         x.move()
         x.draw(surface)
-    if (mouse != None):
-        surface.blit(targetimage, (mouse[0] - 16, mouse[1] - 16, 32, 32))
+    if (data.mouse != None):
+        surface.blit(data.targetimage, (data.mouse[0] - 16, data.mouse[1] - 16, 32, 32))
     # print(introTime)
-    if (introTime <= 450 and not skipIntro):
+    if data.introTime <= 450 and not data.skipIntro:
         video.draw(display, (0, 0))
-        introTime += 1
+        data.introTime += 1
     else:
         # print("s")
-        if not doneIntro:
-            doneIntro = True
+        if not data.doneIntro:
+            data.doneIntro = True
             video.close()
 
 
@@ -350,7 +351,7 @@ def render():
         global variabletest
         # Quit on clicking the "X" in the corner, or by pressing the escape + enter key.
         # variabletest += .5
-        clock.tick(120)
+        clock.tick()
         # variablestr = str(round(variabletest))
         # variabletest+=1
         renderframe(pygame.event.get(), gameDisplay, screen=screen)
