@@ -307,8 +307,8 @@ def renderframe(events, display, skipevents=False, screen=None):
         # print("s")
         pygame.mixer.music.play(loops=-1)
         data.doneMusic = True
-    if (len(particles) > 0):
-        gameDisplay.blit(data.blood, (0, 0, dw, dh), special_flags=pygame.BLEND_ALPHA_SDL2)
+    #if (len(particles) > 0):
+    #    gameDisplay.blit(data.blood, (0, 0, dw, dh), special_flags=pygame.BLEND_ALPHA_SDL2)
     surface = surfacewidget.mysurface
     if random() > .985:
         if (random() > .5):
@@ -326,7 +326,7 @@ def renderframe(events, display, skipevents=False, screen=None):
         x.moveX(x.speed)
         if data.frame % 5 == 0:
             x.advanceframe()
-        # surface.blit(x.getSurface(), x.getBox())
+        surface.blit(x.getSurface(), x.getBox())
     for x in particles:
         x.move()
         x.draw(surface)
