@@ -241,6 +241,9 @@ class DataStore:
         self.blood = pygame.transform.scale(blood, (dw, dh))
         targetimage = pygame.image.load(path + "/assets/target.png").convert_alpha()
         self.targetimage = pygame.transform.scale(targetimage, (32, 32))
+        background = pygame.image.load(path + "/assets/background.png").convert_alpha()
+        self.background = pygame.transform.scale(background, (dw, dh))
+
 
 
 data = DataStore()
@@ -352,9 +355,11 @@ def render():
         global variabletest
         # Quit on clicking the "X" in the corner, or by pressing the escape + enter key.
         # variabletest += .5
-        clock.tick()
+        clock.tick(60)
         # variablestr = str(round(variabletest))
         # variabletest+=1
+        gameDisplay.fill(pygame.Color("blue3"))
+        gameDisplay.blit(data.background,(0,0,dw,dh))
         renderframe(pygame.event.get(), gameDisplay, screen=screen)
         # screen.update()
         pygame.display.flip()
