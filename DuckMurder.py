@@ -2,6 +2,7 @@
 import sys
 if __name__ == '__main__':
     sys.path.append("D:\Python\RKit\GUIs")
+    sys.path.append("/media/tommy/Tommy/Python/RKit/GUIs")
 
 import guis
 #from guis.guis import *
@@ -14,47 +15,65 @@ pygame.init()
 
 usefull = False
 looping=True
+ldw = 1280
+ldh = 640
+path = str(pathlib.Path(__file__).parent.resolve())
+if __name__=="__main__":
+    if usefull:
+        gameDisplay = pygame.display.set_mode((ldw, ldh), pygame.FULLSCREEN,pygame.RESIZABLE )
+        s = pygame.display.get_window_size()
+        dw = s[0]
+        dh = s[1]
+    else:
+        gameDisplay = pygame.display.set_mode((ldw, ldh),pygame.RESIZABLE)
+    s = pygame.display.get_window_size()
+    dw = s[0]
+    dh = s[1]
+pygame.display.set_icon(pygame.image.load( path+"/assets/duck_icon.png"))
+pygame.display.set_caption('Duck massacre')
 s = pygame.display.get_window_size()
 dw = s[0]
 dh = s[1]
-ldw = 1280
-ldh = 640
 variabletest = 0
 looping=True
 clock = pygame.time.Clock()
-score = 100000
-path = str(pathlib.Path(__file__).parent.resolve())
-print(path,file=open("log.txt","w"))
+score = 0
+# print(path,file=open("log.txt","w"))
 gun = pygame.mixer.Sound(path+"/assets/duck_gun.ogg")
 gun.set_volume(.5)
 pygame.mixer.music.load(path+"/assets/war-full.wav")
 pygame.mixer.music.set_volume(.5)
 video = guis.videoplayer.Video(str(path)+"/assets/TitleScreen.mp4",23.98,356,14,dw,dh)
 video.set_size((dw,dh))
+sprites = {}
 
 class particle():
     def move(self):
         self.y+=self.yv
         self.x+=self.xv
+        self.x += random.uniform(.9,1)
         self.yv+=random.uniform(.41,.49)
-        self.xv=self.xv*random.uniform(.97,.99)
-        if(self.y>dh or len(self.trail)>=30):
+        self.xv=self.xv*random.uniform(.9,1)
+        if(self.y>dh or len(self.trail)>=20):
             if(len(self.trail)>0):
                 self.trail.pop(0)
             else:
                 particles.remove(self)
         else:
-            self.trail.append((self.x,self.y))
+            self.trail.append((self.getX(),self.getY()))
 
     def draw(self,surface):
         last = (self.x,self.y)
-        pygame.draw.circle(surface,(150,0,0,155),self.modPos(last),radius=5)
+        # pygame.draw.circle(surface,(150,0,0,155),self.modPos(last),radius=5)
         trail = self.trail.copy()
-        trail.reverse()
+        # trail.reverse()
+        if len(trail)>2:
+            pygame.draw.polygon(surface,(150,0,0),trail)
+        """
         for x in trail:
             pygame.draw.line(surface,(150,0,0),self.modPos(x),self.modPos(last),width=10)
             last = x
-            pygame.draw.circle(surface,(150,0,0),self.modPos(last),radius=5)
+            pygame.draw.circle(surface,(150,0,0),self.modPos(last),radius=5)"""
         #surface.blit( self.getSurface(),self.getBox())
 
     def modPos(self,pos):
@@ -79,11 +98,7 @@ class particle():
         return (self.getX(),self.getY(),16,16)
 
     def getSurface(self):
-        self.texbackup = self.getTexture()
-        rect = (0,0,16,16)
-        sprite = pygame.image.load( self.texbackup ).subsurface(rect)
-        self.surf = sprite
-        return self.surf
+        return None
 
     def __init__(self,angle,pos):
         self.x = pos[0]+32+math.sin(math.radians(angle*18))*15
@@ -143,7 +158,12 @@ class bird():
                 else:
                     rect = (213,297,30,33)
         #print(rect)
-        sprite = pygame.image.load( self.texbackup ).subsurface(rect)
+        if sprites.get(self.texbackup) is not None:
+            sprite = sprites[self.texbackup].subsurface(rect)
+        else:
+            sprites[self.texbackup] = pygame.image.load( self.texbackup )
+            sprite = sprites[self.texbackup].subsurface(rect)
+
         sprite = pygame.transform.scale2x(sprite)
         self.surf = pygame.transform.flip(sprite ,not self.direction,False)
         return self.surf
@@ -194,8 +214,11 @@ spawns = [(208,448),(490,308),(1070,248),(1150,248),(460,308)]
 doneMusic = False
 doneIntro = False
 introTime = 0
-skipIntro = False
+skipIntro = True
 killCounter = 0
+frame = 0
+blood = pygame.image.load(path+"/assets/blood_overlay.png")
+blood = pygame.transform.scale(blood,(dw,dh))
 
 def spawnFurry():
     i = spawns[int(random.uniform(0,4))]
@@ -212,6 +235,8 @@ def renderframe(events,display,skipevents=False,screen=None):
     global doneIntro
     global introTime
     global killCounter
+    global frame
+    global blood
     guis.globallink = globals()
     if not skipevents:
         for event in events:
@@ -260,6 +285,7 @@ def renderframe(events,display,skipevents=False,screen=None):
                 dw = s[0]
                 dh = s[1]
                 display.fill((0,0,0))
+                blood = pygame.transform.scale(blood,(dw,dh))
                 pygame.display.update()
             if event.type == WINDOWLEAVE:
                 screen.prossesinputs("Mouseleave",event,display,globals())
@@ -267,13 +293,11 @@ def renderframe(events,display,skipevents=False,screen=None):
     clock.tick(120)
     #pygame.display.update()
     screen.redraw(display)
-    if((doneIntro or skipIntro)and not doneMusic ):
+    if (doneIntro or skipIntro) and not doneMusic:
         #print("s")
         pygame.mixer.music.play(loops=-1)
         doneMusic = True
     if(len(particles)>0):
-        blood = pygame.image.load(path+"/assets/blood_overlay.png")
-        blood = pygame.transform.scale(blood,(dw,dh))
         gameDisplay.blit(blood,(0,0,dw,dh))
     surface = surfacewidget.mysurface
     if(random.random()>.99):
@@ -287,13 +311,10 @@ def renderframe(events,display,skipevents=False,screen=None):
                 birds.append(bird(0,random.uniform(dh/1.2,(dh/1.2)-32), True ,True ))
             else:
                 birds.append(bird(dw-32,random.uniform(dh/1.2,(dh/1.2)-32), False,True))
+    frame += 1
     for x in birds:
-        x.moveX(x.speed);
-        if(not hasattr(x,"frame2")):
-            x.frame2=0
-        else:
-            x.frame2+=1
-        if(x.frame2%10==0):
+        x.moveX(x.speed)
+        if frame %10==0:
             x.advanceframe()
         surface.blit( x.getSurface(),x.getBox())
     for x in particles:
@@ -308,9 +329,10 @@ def renderframe(events,display,skipevents=False,screen=None):
         video.draw(display,(0,0))
         introTime+=1
     else:
-        #print("s")
-        doneIntro=True
-        video.close()
+        # print("s")
+        if not doneIntro:
+            doneIntro=True
+            video.close()
 
 def render():
     global looping
@@ -331,20 +353,6 @@ def render():
         #print("Tick",clock.get_time())
         #print(vl.countchildren())
     pygame.quit()
-
-if True:
-    if usefull:
-        gameDisplay = pygame.display.set_mode((ldw, ldh), pygame.FULLSCREEN,pygame.RESIZABLE )
-        s = pygame.display.get_window_size()
-        dw = s[0]
-        dh = s[1]
-    else:
-        gameDisplay = pygame.display.set_mode((ldw, ldh),pygame.RESIZABLE)
-    s = pygame.display.get_window_size()
-    dw = s[0]
-    dh = s[1]
-    pygame.display.set_icon(pygame.image.load( path+"/assets/duck_icon.png"))
-    pygame.display.set_caption('Duck massacre')
 
 
 screen = guis.mainWidget("blue",inglobals=globals(),style={},data={})
