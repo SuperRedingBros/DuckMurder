@@ -8,10 +8,9 @@ import guis
 # from guis.guis import *
 import pygame
 from pygame.locals import *
-import random
+from random import uniform,randint,random
 import pathlib
-import math
-import numpy as np
+from math import sin,cos,radians
 pygame.mixer.pre_init(44100, 16, 2, 4096)
 pygame.init()
 
@@ -56,16 +55,16 @@ class particle():
         global particles
         self.y += self.yv
         self.x += self.xv
-        self.x += random.uniform(-1, 1)
-        self.yv += random.uniform(.41, .49)
-        self.xv = self.xv * random.uniform(.9, 1)
+        self.x += uniform(-1, 1)
+        self.yv += uniform(.41, .49)
+        self.xv = self.xv * uniform(.9, 1)
         if self.y > dh or len(self.trail) >= 20:
             if len(self.trail) > 0:
                 self.trail.pop(0)
             else:
                 particles.remove(self)
         else:
-            self.trail.append(np.array( ( self.getX(), self.getY() )))
+            self.trail.append(( self.getX(), self.getY() ))
 
     def draw(self, surface):
         last = (self.x, self.y)
@@ -106,10 +105,10 @@ class particle():
         return None
 
     def __init__(self, angle, pos):
-        self.x = pos[0] + 32 + math.sin(math.radians(angle * 36)) * 15
-        self.xv = math.sin(math.radians(angle * 36)) * 10
-        self.y = pos[1] + 32 + math.cos(math.radians(angle * 36)) * 15
-        self.yv = math.cos(math.radians(angle * 36)) * 10
+        self.x = pos[0] + 32 + sin(radians(angle * 36)) * 15
+        self.xv = sin(radians(angle * 36)) * 10
+        self.y = pos[1] + 32 + cos(radians(angle * 36)) * 15
+        self.yv = cos(radians(angle * 36)) * 10
         self.trail = []
 
 
@@ -164,14 +163,16 @@ class bird():
                 else:
                     rect = (213, 297, 30, 33)
         # print(rect)
-        if self.texbackup+":"+str(self.frame) in sprites:
-            sprite = sprites[self.texbackup+":"+str(self.frame)]
+        outstr = "".join( (self.texbackup,":",str(self.frame),str(self.dead)))
+        if outstr in sprites:
+            sprite = sprites[outstr]
         else:
             sprite = pygame.image.load(self.texbackup).convert_alpha().subsurface(rect)
-            sprites[self.texbackup + ":" + str(self.frame)] = sprite
+            sprites[outstr] = sprite
 
-        sprite = pygame.transform.scale2x(sprite)
-        self.surf = pygame.transform.flip(sprite, not self.direction, False)
+        self.surf = pygame.transform.scale2x(sprite)
+        if not self.direction:
+            self.surf = pygame.transform.flip(self.surf, True, False)
         return self.surf
 
     def moveX(self, x):
@@ -204,13 +205,12 @@ class bird():
         return (self.getX(), self.getY(), 36, 36)
 
     def __init__(self, x, y, direction, bear=False):
-        self.x = x
-        self.y = y
-        self.color = random.randint(0, 2)
+        self.x, self.y  = x,y
+        self.color = randint(0, 2)
         self.frame = 0
         self.dead = False
         self.direction = direction
-        self.speed = random.uniform(1, 3)
+        self.speed = uniform(1, 3)
         self.bear = bear
 
 
@@ -309,17 +309,17 @@ def renderframe(events, display, skipevents=False, screen=None):
     if (len(particles) > 0):
         gameDisplay.blit(blood, (0, 0, dw, dh), special_flags=pygame.BLEND_ALPHA_SDL2)
     surface = surfacewidget.mysurface
-    if (random.random() > .985):
-        if (random.random() > .5):
-            if (random.random() > .5):
-                birds.append(bird(0, random.uniform(0, dh / 2), True))
+    if (random() > .985):
+        if (random() > .5):
+            if (random() > .5):
+                birds.append(bird(0, uniform(0, dh / 2), True))
             else:
-                birds.append(bird(dw - 32, random.uniform(0, dh / 2), False))
+                birds.append(bird(dw - 32, uniform(0, dh / 2), False))
         else:
-            if (random.random() > .5):
-                birds.append(bird(0, random.uniform(dh / 1.2, (dh / 1.2) - 32), True, True))
+            if (random() > .5):
+                birds.append(bird(0, uniform(dh / 1.2, (dh / 1.2) - 32), True, True))
             else:
-                birds.append(bird(dw - 32, random.uniform(dh / 1.2, (dh / 1.2) - 32), False, True))
+                birds.append(bird(dw - 32, uniform(dh / 1.2, (dh / 1.2) - 32), False, True))
     frame += 1
     for x in birds:
         x.moveX(x.speed)
@@ -350,7 +350,7 @@ def render():
         global variabletest
         # Quit on clicking the "X" in the corner, or by pressing the escape + enter key.
         # variabletest += .5
-        clock.tick(60)
+        clock.tick(120)
         # variablestr = str(round(variabletest))
         # variabletest+=1
         renderframe(pygame.event.get(), gameDisplay, screen=screen)
