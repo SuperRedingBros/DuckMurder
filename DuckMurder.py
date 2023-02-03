@@ -326,7 +326,7 @@ def renderframe(events, display, skipevents=False, screen=None):
         x.moveX(x.speed)
         if data.frame % 5 == 0:
             x.advanceframe()
-        surface.blit(x.getSurface(), x.getBox())
+        # surface.blit(x.getSurface(), x.getBox())
     for x in particles:
         x.move()
         x.draw(surface)
@@ -342,11 +342,12 @@ def renderframe(events, display, skipevents=False, screen=None):
             data.doneIntro = True
             video.close()
 
+print("BLAH")
 
 def render():
     global looping
     guis.globallink = globals()
-    while looping:
+    while 1:
         global variablestr
         global variabletest
         # Quit on clicking the "X" in the corner, or by pressing the escape + enter key.
