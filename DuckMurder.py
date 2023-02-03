@@ -228,6 +228,10 @@ def spawnFurry():
     birds.append(bird(w, h, None))
 
 
+def Font(fontFace, size):
+    return pygame.font.Font(fontFace, round(size))
+
+
 class DataStore:
     def __init__(self):
         self.doneMusic = False
@@ -243,6 +247,8 @@ class DataStore:
         self.targetimage = pygame.transform.scale(targetimage, (32, 32))
         background = pygame.image.load(path + "/assets/background.png").convert_alpha()
         self.background = pygame.transform.scale(background, (dw, dh))
+        fontpath = str(pathlib.PurePath(path, "assets/Xolonium-Bold.ttf"))
+        self.font = Font(fontpath,32)
 
 
 
@@ -360,6 +366,7 @@ def render():
         # variabletest+=1
         gameDisplay.fill(pygame.Color("blue3"))
         gameDisplay.blit(data.background,(0,0,dw,dh))
+        gameDisplay.blit(data.font.render("Score: "+str(score),False,"black"),dest=(dw-320,0,320,dh))
         renderframe(pygame.event.get(), gameDisplay, screen=screen)
         # screen.update()
         pygame.display.flip()
