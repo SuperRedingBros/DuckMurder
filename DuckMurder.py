@@ -318,7 +318,8 @@ def renderframe(events, display, skipevents=False, screen=None):
         data.doneMusic = True
     if (len(particles) > 0):
         # gameDisplay.blit(data.blood, (0, 0, dw, dh), special_flags=pygame.BLEND_ALPHA_SDL2)
-    surface = surfacewidget.mysurface
+        pass
+    surface = gameDisplay
     if random() > .985:
         if (random() > .5):
             if (random() > .5):
