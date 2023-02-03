@@ -12,7 +12,7 @@ import random
 import pathlib
 import math
 import numpy as np
-
+pygame.mixer.pre_init(44100, 16, 2, 4096)
 pygame.init()
 
 usefull = False
@@ -164,11 +164,11 @@ class bird():
                 else:
                     rect = (213, 297, 30, 33)
         # print(rect)
-        if sprites.get(self.texbackup) is not None:
-            sprite = sprites[self.texbackup].subsurface(rect)
+        if self.texbackup+":"+str(self.frame) in sprites:
+            sprite = sprites[self.texbackup+":"+str(self.frame)]
         else:
-            sprites[self.texbackup] = pygame.image.load(self.texbackup)
-            sprite = sprites[self.texbackup].subsurface(rect)
+            sprite = pygame.image.load(self.texbackup).convert_alpha().subsurface(rect)
+            sprites[self.texbackup + ":" + str(self.frame)] = sprite
 
         sprite = pygame.transform.scale2x(sprite)
         self.surf = pygame.transform.flip(sprite, not self.direction, False)
@@ -224,8 +224,10 @@ introTime = 0
 skipIntro = True
 killCounter = 0
 frame = 0
-blood = pygame.image.load(path + "/assets/blood_overlay.png")
+blood = pygame.image.load(path + "/assets/blood_overlay.png").convert_alpha()
 blood = pygame.transform.scale(blood, (dw, dh))
+targetimage = pygame.image.load(path + "/assets/target.png").convert_alpha()
+targetimage = pygame.transform.scale(targetimage, (32, 32))
 
 
 def spawnFurry():
@@ -246,6 +248,7 @@ def renderframe(events, display, skipevents=False, screen=None):
     global killCounter
     global frame
     global blood
+    global targetimage
     #guis.globallink = globals()
     if not skipevents:
         for event in events:
@@ -283,10 +286,6 @@ def renderframe(events, display, skipevents=False, screen=None):
                 mouse = event.pos
             if event.type == pygame.MOUSEBUTTONUP:
                 screen.prossesinputs("Mouseup", event, display, globals())
-            if event.type == pygame.FINGERDOWN:
-                pass
-            if event.type == pygame.FINGERUP:
-                pass
             if event.type == pygame.VIDEORESIZE:
                 s = pygame.display.get_window_size()
                 guis.dw = s[0]
@@ -294,6 +293,7 @@ def renderframe(events, display, skipevents=False, screen=None):
                 dw = s[0]
                 dh = s[1]
                 display.fill((0, 0, 0))
+                targetimage = pygame.transform.scale(targetimage, (32, 32))
                 blood = pygame.transform.scale(blood, (dw, dh))
                 pygame.display.update()
             if event.type == WINDOWLEAVE:
@@ -330,9 +330,7 @@ def renderframe(events, display, skipevents=False, screen=None):
         x.move()
         x.draw(surface)
     if (mouse != None):
-        image = pygame.image.load(path + "/assets/target.png")
-        image = pygame.transform.scale(image, (32, 32))
-        surface.blit(image, (mouse[0] - 16, mouse[1] - 16, 32, 32))
+        surface.blit(targetimage, (mouse[0] - 16, mouse[1] - 16, 32, 32))
     # print(introTime)
     if (introTime <= 450 and not skipIntro):
         video.draw(display, (0, 0))
@@ -352,12 +350,12 @@ def render():
         global variabletest
         # Quit on clicking the "X" in the corner, or by pressing the escape + enter key.
         # variabletest += .5
-        clock.tick(30)
+        clock.tick(60)
         # variablestr = str(round(variabletest))
         # variabletest+=1
         renderframe(pygame.event.get(), gameDisplay, screen=screen)
         # screen.update()
-        pygame.display.update()
+        pygame.display.flip()
         # pygame.time.wait(1500)
         # variabletest += .5
         # print("Tick",clock.get_time())
