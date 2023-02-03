@@ -29,6 +29,7 @@ if __name__=="__main__":
     s = pygame.display.get_window_size()
     dw = s[0]
     dh = s[1]
+gameDisplay = pygame.display.get_surface()
 pygame.display.set_icon(pygame.image.load( path+"/assets/duck_icon.png"))
 pygame.display.set_caption('Duck massacre')
 s = pygame.display.get_window_size()
