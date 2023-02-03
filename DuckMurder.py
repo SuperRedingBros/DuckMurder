@@ -247,6 +247,10 @@ class DataStore:
         self.targetimage = pygame.transform.scale(targetimage, (32, 32))
         background = pygame.image.load(path + "/assets/background.png").convert_alpha()
         self.background = pygame.transform.scale(background, (dw, dh))
+        self.bloodbackground = self.background.copy()
+        self.bloodbackground.blit(self.blood, (0, 0, dw, dh))
+        self.bloodbackground.convert()
+
         fontpath = str(pathlib.PurePath(path, "assets/Xolonium-Bold.ttf"))
         self.font = Font(fontpath,32)
 
@@ -316,8 +320,8 @@ def renderframe(events, display, skipevents=False, screen=None):
         # print("s")
         pygame.mixer.music.play(loops=-1)
         data.doneMusic = True
-    if (len(particles) > 0):
-        # gameDisplay.blit(data.blood, (0, 0, dw, dh), special_flags=pygame.BLEND_ALPHA_SDL2)
+    if len(particles) > 0:
+        gameDisplay.blit(data.bloodbackground, (0, 0, dw, dh), special_flags=pygame.BLEND_ALPHA_SDL2)
         pass
     surface = gameDisplay
     if random() > .985:
