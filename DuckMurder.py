@@ -246,7 +246,7 @@ def renderframe(events, display, skipevents=False, screen=None):
     global killCounter
     global frame
     global blood
-    guis.globallink = globals()
+    #guis.globallink = globals()
     if not skipevents:
         for event in events:
             if event.type == pygame.QUIT:
@@ -352,7 +352,7 @@ def render():
         global variabletest
         # Quit on clicking the "X" in the corner, or by pressing the escape + enter key.
         # variabletest += .5
-        clock.tick(60)
+        clock.tick(30)
         # variablestr = str(round(variabletest))
         # variabletest+=1
         renderframe(pygame.event.get(), gameDisplay, screen=screen)
