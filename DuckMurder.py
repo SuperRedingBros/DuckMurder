@@ -14,8 +14,9 @@ pygame.init()
 
 usefull = False
 looping=True
-dw = 1280
-dh = 640
+s = pygame.display.get_window_size()
+dw = s[0]
+dh = s[1]
 ldw = 1280
 ldh = 640
 variabletest = 0
