@@ -302,13 +302,13 @@ def renderframe(events, display, skipevents=False, screen=None):
 
     # pygame.display.update()
     print(clock.get_fps())
-    screen.redraw(display)
+    # screen.redraw(display)
     if (data.doneIntro or data.skipIntro) and not data.doneMusic:
         # print("s")
         pygame.mixer.music.play(loops=-1)
         data.doneMusic = True
-    #if (len(particles) > 0):
-    #    gameDisplay.blit(data.blood, (0, 0, dw, dh), special_flags=pygame.BLEND_ALPHA_SDL2)
+    if (len(particles) > 0):
+        gameDisplay.blit(data.blood, (0, 0, dw, dh), special_flags=pygame.BLEND_ALPHA_SDL2)
     surface = surfacewidget.mysurface
     if random() > .985:
         if (random() > .5):
