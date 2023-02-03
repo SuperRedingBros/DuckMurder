@@ -317,7 +317,7 @@ def renderframe(events, display, skipevents=False, screen=None):
         pygame.mixer.music.play(loops=-1)
         data.doneMusic = True
     if (len(particles) > 0):
-        gameDisplay.blit(data.blood, (0, 0, dw, dh), special_flags=pygame.BLEND_ALPHA_SDL2)
+        # gameDisplay.blit(data.blood, (0, 0, dw, dh), special_flags=pygame.BLEND_ALPHA_SDL2)
     surface = surfacewidget.mysurface
     if random() > .985:
         if (random() > .5):
